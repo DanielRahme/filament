@@ -10,6 +10,49 @@
 Filament is a real-time physically based rendering engine for Android, iOS, Linux, macOS, Windows,
 and WebGL. It is designed to be as small as possible and as efficient as possible on Android.
 
+## Quick Setup
+
+
+## Build options
+
+Build android release with Suzanne sample:
+
+    CC=/usr/bin/clang CXX=/usr/bin/clang++ CXXFLAGS=-stdlib=libc++ ./build.sh -k sample-suzanne -q arm64-v8a -p android -i release
+
+Build android samples:
+
+    - sample-suzanne
+    - sample-pbr-sphere
+    - sample-textured-object
+
+    CC=/usr/bin/clang CXX=/usr/bin/clang++ CXXFLAGS=-stdlib=libc++ ./build.sh -k sample-textured-object,sample-suzanne,sample-pbr-sphere -q arm64-v8a -p android -i release
+
+
+Build original samples for desktop and android platforms
+
+    CC=/usr/bin/clang CXX=/usr/bin/clang++ CXXFLAGS=-stdlib=libc++ ./build.sh -k sample-textured-object,sample-material-builder -q arm64-v8a,x86_64 -p desktop,android -i release
+
+
+Build release for android and desktop
+
+    CC=/usr/bin/clang CXX=/usr/bin/clang++ CXXFLAGS=-stdlib=libc++ ./build.sh -p desktop,android -i release
+
+Sign:
+
+    keytool -genkey -v -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000
+
+    export APKSIGNER=$ANDROID_HOME/build-tools/33.0.1/apksigner
+
+    apksigner sign --ks <keystore>.jks <app-name>.apk
+    ${APKSIGNER} sign --ks my-release-key.keystore out/sample-textured-object-release.apk
+
+    adb install -g out/sample-textured-object-release.apk
+
+
+Clean:
+
+    ./build.sh -C
+
 ## Download
 
 [Download Filament releases](https://github.com/google/filament/releases) to access stable builds.
