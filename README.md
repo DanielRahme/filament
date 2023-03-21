@@ -44,9 +44,9 @@ Sign:
     export APKSIGNER=$ANDROID_HOME/build-tools/33.0.1/apksigner
 
     apksigner sign --ks <keystore>.jks <app-name>.apk
-    ${APKSIGNER} sign --ks my-release-key.keystore out/sample-textured-object-release.apk
+    ${APKSIGNER} sign --ks my-release-key.keystore out/sample-suzanne-release.apk
 
-    adb install -g out/sample-textured-object-release.apk
+    adb install -r -g out/sample-suzanne-release.apk
 
 
 Clean:
