@@ -43,106 +43,113 @@ class MainActivity : Activity() {
     }
 
     // The View we want to render into
-    private lateinit var surfaceView: SurfaceView
     // UiHelper is provided by Filament to manage SurfaceView and SurfaceTexture
-    private lateinit var uiHelper: UiHelper
     // DisplayHelper is provided by Filament to manage the display
-    private lateinit var displayHelper: DisplayHelper
     // Choreographer is used to schedule new frames
-    private lateinit var choreographer: Choreographer
 
     // Engine creates and destroys Filament resources
     // Each engine must be accessed from a single thread of your choosing
     // Resources cannot be shared across engines
-    private lateinit var engine: Engine
     // A renderer instance is tied to a single surface (SurfaceView, TextureView, etc.)
-    private lateinit var renderer: Renderer
     // A scene holds all the renderable, lights, etc. to be drawn
-    private lateinit var scene: Scene
     // A view defines a viewport, a scene and a camera for rendering
-    private lateinit var view: View
     // Should be pretty obvious :)
-    private lateinit var camera: Camera
-
-    private lateinit var material: Material
-    private lateinit var materialInstance: MaterialInstance
-
-    private lateinit var baseColor: Texture
-    private lateinit var normal: Texture
-    // private lateinit var aoRoughnessMetallic: Texture
-    private lateinit var ao: Texture
-    private lateinit var roughness: Texture
-    private lateinit var metallic: Texture
-
-    private lateinit var mesh: Mesh
-    private lateinit var ibl: Ibl
-
     // Filament entity representing a renderable object
-    @Entity private var light = 0
-
     // A swap chain is Filament's representation of a surface
-    private var swapChain: SwapChain? = null
-
     // Performs the rendering and schedules new frames
-    private val frameScheduler = FrameCallback()
 
+    private lateinit var surfaceView: SurfaceView
+    private lateinit var uiHelper: UiHelper
+    private lateinit var displayHelper: DisplayHelper
+    private lateinit var choreographer: Choreographer
+
+    private lateinit var engine:        Engine
+    private lateinit var scene:         Scene
+    private lateinit var renderer:      Renderer
+    private lateinit var view:          View
+    private lateinit var camera:        Camera
+    private lateinit var material:      Material
+    private lateinit var materialInstance: MaterialInstance
+    private lateinit var baseColor:     Texture
+    private lateinit var normal:        Texture
+    private lateinit var ao:            Texture
+    private lateinit var roughness:     Texture
+    private lateinit var metallic:      Texture
+    private lateinit var mesh:          Mesh
+    private lateinit var ibl:           Ibl
+    @Entity private var light =         0
+    private var swapChain: SwapChain? = null
+    private val frameScheduler = FrameCallback()
     private val animator = ValueAnimator.ofFloat(0.0f, (2.0 * PI).toFloat())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Setup SurfaceView
         surfaceView = SurfaceView(this)
         setContentView(surfaceView)
-
         choreographer = Choreographer.getInstance()
-
         displayHelper = DisplayHelper(this)
 
-        setupSurfaceView()
-        setupFilament()
-        setupView()
-        setupScene()
-    }
-
-    private fun setupSurfaceView() {
         uiHelper = UiHelper(UiHelper.ContextErrorPolicy.DONT_CHECK)
         uiHelper.renderCallback = SurfaceCallback()
-
         // NOTE: To choose a specific rendering resolution, add the following line:
         // uiHelper.setDesiredSize(1280, 720)
-
         uiHelper.attachTo(surfaceView)
-    }
 
-    private fun setupFilament() {
+        // Setup Filament
         engine = Engine.create()
         renderer = engine.createRenderer()
         scene = engine.createScene()
         view = engine.createView()
         camera = engine.createCamera(engine.entityManager.create())
-    }
 
-    private fun setupView() {
-        // NOTE: Try to disable post-processing (tone-mapping, etc.) to see the difference
-        // view.isPostProcessingEnabled = false
-
+        // Setup View
+        //
         // Tell the view which camera we want to use
-        view.camera = camera
-
         // Tell the view which scene we want to render
-        view.scene = scene
-
         // Enable dynamic resolution with a default target frame rate of 60fps
+
+        // NOTE: Try to disable post-processing (tone-mapping, etc.) to see the difference
+        //
+        //view.isPostProcessingEnabled = false
+
+        view.camera = camera
+        view.scene = scene
         val options = View.DynamicResolutionOptions()
         options.enabled = true
-
         view.dynamicResolutionOptions = options
-    }
 
-    private fun setupScene() {
-        loadMaterial()
-        setupMaterial()
-        loadImageBasedLight()
+        // Setup Scene
+        // Load Material
+        readUncompressedAsset("materials/common_pbr.filamat").let {
+            material = Material.Builder().payload(it, it.remaining()).build(engine)
+        }
+
+        // Setup Material
+        //
+        // Create an instance of the material to set different parameters on it
+        // NOTE: that the textures are stored in drawable-nodpi to prevent the system
+        // from automatically resizing them based on the display's density
+        materialInstance = material.createInstance()
+        baseColor = loadTexture(engine, resources, R.drawable.dirty_gold_01_color, TextureType.COLOR)
+        normal = loadTexture(engine, resources, R.drawable.dirty_gold_01_normal, TextureType.NORMAL)
+        ao = loadTexture(engine, resources, R.drawable.dirty_gold_01_ao, TextureType.DATA)
+        roughness = loadTexture(engine, resources, R.drawable.dirty_gold_01_roughness, TextureType.DATA)
+        metallic = loadTexture(engine, resources, R.drawable.dirty_gold_01_metallic, TextureType.DATA)
+
+        // A texture sampler does not need to be kept around or destroyed
+        val sampler = TextureSampler()
+        sampler.anisotropy = 8.0f
+        materialInstance.setParameter("baseColor", baseColor, sampler)
+        materialInstance.setParameter("normal", normal, sampler)
+        materialInstance.setParameter("ao", ao, sampler)
+        materialInstance.setParameter("roughness", roughness, sampler)
+        materialInstance.setParameter("metallic", metallic, sampler)
+
+        // Load image based lighting
+        ibl = loadIbl(assets, "envs/flower_road_no_sun_2k", engine)
+        ibl.indirectLight.intensity = 40_000.0f
 
         scene.skybox = ibl.skybox
         scene.indirectLight = ibl.indirectLight
@@ -150,16 +157,14 @@ class MainActivity : Activity() {
         // This map can contain named materials that will map to the material names
         // loaded from the filamesh file. The material called "DefaultMaterial" is
         // applied when no named material can be found
-        val materials = mapOf("DefaultMaterial" to materialInstance)
-
         // Load the mesh in the filamesh format (see filamesh tool)
+        val materials = mapOf("DefaultMaterial" to materialInstance)
         mesh = loadMesh(assets, "models/monkey.filamesh", materials, engine)
 
         // Move the mesh down
         // Filament uses column-major matrices
         /* ktlint-disable */
-        engine.transformManager.setTransform(
-                engine.transformManager.getInstance(mesh.renderable),
+        engine.transformManager.setTransform(engine.transformManager.getInstance(mesh.renderable),
                 floatArrayOf(
                         1.0f, 0.0f, 0.0f, 0.0f,
                         0.0f, 1.0f, 0.0f, 0.0f,
@@ -179,66 +184,18 @@ class MainActivity : Activity() {
         val (r, g, b) = Colors.cct(6_500.0f)
         LightManager.Builder(LightManager.Type.DIRECTIONAL)
                 .color(r, g, b)
-                // Intensity of the sun in lux on a clear day
-                .intensity(110_000.0f)
-                // The direction is normalized on our behalf
-                .direction(-0.753f, -1.0f, 0.890f)
+                .intensity(110_000.0f) // Intensity of the sun in lux on a clear day
+                .direction(-0.753f, -1.0f, 0.890f) // The direction is normalized on our behalf
                 .castShadows(true)
                 .build(engine, light)
-
-        // Add the entity to the scene to light it
-        scene.addEntity(light)
 
         // Set the exposure on the camera, this exposure follows the sunny f/16 rule
         // Since we've defined a light that has the same intensity as the sun, it
         // guarantees a proper exposure
+        scene.addEntity(light)
         camera.setExposure(16.0f, 1.0f / 125.0f, 100.0f)
 
-        startAnimation()
-    }
-
-    private fun loadMaterial() {
-        // readUncompressedAsset("materials/textured_pbr.filamat").let {
-        readUncompressedAsset("materials/common_pbr.filamat").let {
-            material = Material.Builder().payload(it, it.remaining()).build(engine)
-        }
-    }
-
-    private fun setupMaterial() {
-        // Create an instance of the material to set different parameters on it
-        materialInstance = material.createInstance()
-
-        // Note that the textures are stored in drawable-nodpi to prevent the system
-        // from automatically resizing them based on the display's density
-        baseColor =
-                loadTexture(engine, resources, R.drawable.dirty_gold_01_color, TextureType.COLOR)
-        normal = loadTexture(engine, resources, R.drawable.dirty_gold_01_normal, TextureType.NORMAL)
-        // aoRoughnessMetallic = loadTexture( engine, resources,
-        // R.drawable.floor_ao_roughness_metallic, TextureType.DATA)
-        ao = loadTexture(engine, resources, R.drawable.dirty_gold_01_ao, TextureType.DATA)
-        roughness =
-                loadTexture(engine, resources, R.drawable.dirty_gold_01_roughness, TextureType.DATA)
-        metallic =
-                loadTexture(engine, resources, R.drawable.dirty_gold_01_metallic, TextureType.DATA)
-
-        // A texture sampler does not need to be kept around or destroyed
-        val sampler = TextureSampler()
-        sampler.anisotropy = 8.0f
-
-        materialInstance.setParameter("baseColor", baseColor, sampler)
-        materialInstance.setParameter("normal", normal, sampler)
-        // materialInstance.setParameter("aoRoughnessMetallic", aoRoughnessMetallic, sampler)
-        materialInstance.setParameter("ao", ao, sampler)
-        materialInstance.setParameter("roughness", roughness, sampler)
-        materialInstance.setParameter("metallic", metallic, sampler)
-    }
-
-    private fun loadImageBasedLight() {
-        ibl = loadIbl(assets, "envs/flower_road_no_sun_2k", engine)
-        ibl.indirectLight.intensity = 40_000.0f
-    }
-
-    private fun startAnimation() {
+        // Start Animation
         // Animate the triangle
         animator.interpolator = LinearInterpolator()
         animator.duration = 18_000
@@ -249,6 +206,9 @@ class MainActivity : Activity() {
             camera.lookAt(cos(v) * 4.5, 1.5, sin(v) * 4.5, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
         }
         animator.start()
+    }
+
+    private fun loadImageBasedLight() {
     }
 
     override fun onResume() {
@@ -267,10 +227,9 @@ class MainActivity : Activity() {
         super.onDestroy()
 
         // Stop the animation and any pending frame
+        // Always detach the surface before destroying the engine
         choreographer.removeFrameCallback(frameScheduler)
         animator.cancel()
-
-        // Always detach the surface before destroying the engine
         uiHelper.detach()
 
         // Cleanup all resources
@@ -278,7 +237,6 @@ class MainActivity : Activity() {
         destroyIbl(engine, ibl)
         engine.destroyTexture(baseColor)
         engine.destroyTexture(normal)
-        // engine.destroyTexture(aoRoughnessMetallic)
         engine.destroyTexture(ao)
         engine.destroyTexture(roughness)
         engine.destroyTexture(metallic)
@@ -326,12 +284,12 @@ class MainActivity : Activity() {
         }
 
         override fun onDetachedFromSurface() {
+
             displayHelper.detach()
+                // Required to ensure we don't return before Filament is done executing the
+                // destroySwapChain command, otherwise Android might destroy the Surface too early
             swapChain?.let {
                 engine.destroySwapChain(it)
-                // Required to ensure we don't return before Filament is done executing the
-                // destroySwapChain command, otherwise Android might destroy the Surface
-                // too early
                 engine.flushAndWait()
                 swapChain = null
             }
