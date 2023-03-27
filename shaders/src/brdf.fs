@@ -5,10 +5,13 @@
 // Diffuse BRDFs
 #define DIFFUSE_LAMBERT             0
 #define DIFFUSE_BURLEY              1
+#define DIFFUSE_DUMMY               2
 
 // Specular BRDF
 // Normal distribution functions
 #define SPECULAR_D_GGX              0
+#define SPECULAR_D_DUMMY            1
+#define SPECULAR_D_GGX_UE4          2
 
 // Anisotropic NDFs
 #define SPECULAR_D_GGX_ANISOTROPIC  0
@@ -22,34 +25,90 @@
 #define SPECULAR_V_GGX_ANISOTROPIC  2
 #define SPECULAR_V_KELEMEN          3
 #define SPECULAR_V_NEUBELT          4
+#define SPECULAR_V_DUMMY            5
+#define SPECULAR_V_SCHLICK_UE4      6
 
 // Fresnel functions
 #define SPECULAR_F_SCHLICK          0
+#define SPECULAR_F_DUMMY            1
+#define SPECULAR_F_SCHLICK_UE4      2
 
+//----- Custom BRDFs  -----
+//#define BRDF_DIFFUSE                DIFFUSE_DUMMY
+//#define BRDF_SPECULAR_D             SPECULAR_D_DUMMY
+//#define BRDF_SPECULAR_V             SPECULAR_V_DUMMY
+//#define BRDF_SPECULAR_F             SPECULAR_F_DUMMY
+//#define BRDF_CLEAR_COAT_D           SPECULAR_D_DUMMY
+//#define BRDF_CLEAR_COAT_V           SPECULAR_V_DUMMY
+//#define BRDF_ANISOTROPIC_D          SPECULAR_D_GGX_ANISOTROPIC
+//#define BRDF_ANISOTROPIC_V          SPECULAR_V_GGX_ANISOTROPIC
+//#define BRDF_CLOTH_D                SPECULAR_D_CHARLIE
+//#define BRDF_CLOTH_V                SPECULAR_V_NEUBELT
+
+//----- Unreal Engine BRDFs  -----
 #define BRDF_DIFFUSE                DIFFUSE_LAMBERT
-
-#if FILAMENT_QUALITY < FILAMENT_QUALITY_HIGH
-#define BRDF_SPECULAR_D             SPECULAR_D_GGX
-#define BRDF_SPECULAR_V             SPECULAR_V_SMITH_GGX_FAST
-#define BRDF_SPECULAR_F             SPECULAR_F_SCHLICK
-#else
-#define BRDF_SPECULAR_D             SPECULAR_D_GGX
-#define BRDF_SPECULAR_V             SPECULAR_V_SMITH_GGX
-#define BRDF_SPECULAR_F             SPECULAR_F_SCHLICK
-#endif
+#define BRDF_SPECULAR_D             SPECULAR_D_GGX_UE4
+#define BRDF_SPECULAR_V             SPECULAR_V_SCHLICK_UE4
+#define BRDF_SPECULAR_F             SPECULAR_F_SCHLICK_UE4
 
 #define BRDF_CLEAR_COAT_D           SPECULAR_D_GGX
 #define BRDF_CLEAR_COAT_V           SPECULAR_V_KELEMEN
-
 #define BRDF_ANISOTROPIC_D          SPECULAR_D_GGX_ANISOTROPIC
 #define BRDF_ANISOTROPIC_V          SPECULAR_V_GGX_ANISOTROPIC
-
 #define BRDF_CLOTH_D                SPECULAR_D_CHARLIE
 #define BRDF_CLOTH_V                SPECULAR_V_NEUBELT
+
+// Original
+//#define BRDF_DIFFUSE                DIFFUSE_LAMBERT
+//
+//#if FILAMENT_QUALITY < FILAMENT_QUALITY_HIGH
+//#define BRDF_SPECULAR_D             SPECULAR_D_GGX
+//#define BRDF_SPECULAR_V             SPECULAR_V_SMITH_GGX_FAST
+//#define BRDF_SPECULAR_F             SPECULAR_F_SCHLICK
+//#else
+//#define BRDF_SPECULAR_D             SPECULAR_D_GGX
+//#define BRDF_SPECULAR_V             SPECULAR_V_SMITH_GGX
+//#define BRDF_SPECULAR_F             SPECULAR_F_SCHLICK
+//#endif
+//
+//#define BRDF_CLEAR_COAT_D           SPECULAR_D_GGX
+//#define BRDF_CLEAR_COAT_V           SPECULAR_V_KELEMEN
+//
+//#define BRDF_ANISOTROPIC_D          SPECULAR_D_GGX_ANISOTROPIC
+//#define BRDF_ANISOTROPIC_V          SPECULAR_V_GGX_ANISOTROPIC
+//
+//#define BRDF_CLOTH_D                SPECULAR_D_CHARLIE
+//#define BRDF_CLOTH_V                SPECULAR_V_NEUBELT
 
 //------------------------------------------------------------------------------
 // Specular BRDF implementations
 //------------------------------------------------------------------------------
+vec3 F_Dummy() {
+    return vec3(1.0);
+}
+float V_Dummy() {
+    return 420.0;
+}
+float D_Dummy() {
+    return 1337.0;
+}
+
+float D_GGX_UE4(float roughness, float NoH) {
+    float a2 = roughness * roughness * roughness * roughness;
+    return a2 / ((PI * (NoH * NoH) * (a2 - 1.0) + 1.0) * (PI * (NoH * NoH) * (a2 - 1.0) + 1.0));
+}
+
+float V_Schlick_ue4(float roughness, float NoV, float NoL) {
+    float k = (roughness + 1.0) * (roughness + 1.0) / 8.0;
+    float g_v = NoV / (NoV * (1.0 - k) + k);
+    float g_l = NoL / (NoL * (1.0 - k) + k);
+    return g_v * g_l;
+}
+
+vec3 F_Schlick_ue4(const vec3 f0, float LoH) {
+    float exponent = (-5.55473 * LoH - 6.98316) * LoH;
+    return f0 + (1.0 - f0) * pow(2.0, exponent);
+}
 
 float D_GGX(float roughness, float NoH, const vec3 h) {
     // Walter et al. 2007, "Microfacet Models for Refraction through Rough Surfaces"
@@ -159,6 +218,10 @@ float F_Schlick(float f0, float f90, float VoH) {
 float distribution(float roughness, float NoH, const vec3 h) {
 #if BRDF_SPECULAR_D == SPECULAR_D_GGX
     return D_GGX(roughness, NoH, h);
+#elif BRDF_SPECULAR_D == SPECULAR_D_DUMMY
+    return D_Dummy();
+#elif BRDF_SPECULAR_D == SPECULAR_D_GGX_UE4
+    return D_GGX_UE4(roughness, NoH);
 #endif
 }
 
@@ -167,17 +230,28 @@ float visibility(float roughness, float NoV, float NoL) {
     return V_SmithGGXCorrelated(roughness, NoV, NoL);
 #elif BRDF_SPECULAR_V == SPECULAR_V_SMITH_GGX_FAST
     return V_SmithGGXCorrelated_Fast(roughness, NoV, NoL);
+#elif BRDF_SPECULAR_V == SPECULAR_V_DUMMY
+    return V_Dummy();
+#elif BRDF_SPECULAR_V == SPECULAR_V_SCHLICK_UE4
+    return V_Schlick_ue4(roughness, NoV, NoL);
 #endif
 }
 
 vec3 fresnel(const vec3 f0, float LoH) {
-#if BRDF_SPECULAR_F == SPECULAR_F_SCHLICK
+#if BRDF_SPECULAR_F == SPECULAR_F_DUMMY
+    return F_Dummy();
+#elif BRDF_SPECULAR_F == SPECULAR_F_SCHLICK_UE4
+    return F_Schlick_ue4(f0, LoH);
+
+#elif BRDF_SPECULAR_F == SPECULAR_F_SCHLICK
+
 #if FILAMENT_QUALITY == FILAMENT_QUALITY_LOW
     return F_Schlick(f0, LoH); // f90 = 1.0
 #else
     float f90 = saturate(dot(f0, vec3(50.0 * 0.33)));
     return F_Schlick(f0, f90, LoH);
 #endif
+
 #endif
 }
 
@@ -199,12 +273,18 @@ float visibilityAnisotropic(float roughness, float at, float ab,
 float distributionClearCoat(float roughness, float NoH, const vec3 h) {
 #if BRDF_CLEAR_COAT_D == SPECULAR_D_GGX
     return D_GGX(roughness, NoH, h);
+#elif BRDF_CLEAR_COAT_D == SPECULAR_D_DUMMY
+    return D_Dummy();
+#elif BRDF_CLEAR_COAT_D == SPECULAR_D_GGX_UE4
+    return D_GGX_UE4(roughness, NoH);
 #endif
 }
 
 float visibilityClearCoat(float LoH) {
 #if BRDF_CLEAR_COAT_V == SPECULAR_V_KELEMEN
     return V_Kelemen(LoH);
+#elif BRDF_CLEAR_COAT_V == SPECULAR_V_DUMMY
+    return V_Dummy();
 #endif
 }
 
@@ -217,12 +297,17 @@ float distributionCloth(float roughness, float NoH) {
 float visibilityCloth(float NoV, float NoL) {
 #if BRDF_CLOTH_V == SPECULAR_V_NEUBELT
     return V_Neubelt(NoV, NoL);
+#elif BRDF_CLOTH_V == SPECULAR_V_DUMMY
+    return V_Dummy();
 #endif
 }
 
 //------------------------------------------------------------------------------
 // Diffuse BRDF implementations
 //------------------------------------------------------------------------------
+float Fd_Dummy() {
+    return 1.0 / 3.14;
+}
 
 float Fd_Lambert() {
     return 1.0 / PI;
@@ -250,5 +335,7 @@ float diffuse(float roughness, float NoV, float NoL, float LoH) {
     return Fd_Lambert();
 #elif BRDF_DIFFUSE == DIFFUSE_BURLEY
     return Fd_Burley(roughness, NoV, NoL, LoH);
+#elif BRDF_DIFFUSE == DIFFUSE_DUMMY
+    return Fd_Dummy();
 #endif
 }
