@@ -114,7 +114,7 @@ class MainActivity : Activity() {
 
         // NOTE: Try to disable post-processing (tone-mapping, etc.) to see the difference
         //
-        //view.isPostProcessingEnabled = false
+        // view.isPostProcessingEnabled = false
 
         view.camera = camera
         view.scene = scene
@@ -137,11 +137,14 @@ class MainActivity : Activity() {
         // NOTE: that the textures are stored in drawable-nodpi to prevent the system
         // from automatically resizing them based on the display's density
         materialInstance = material.createInstance()
-        baseColor = loadTexture(engine, resources, R.drawable.dirty_gold_01_color, TextureType.COLOR)
+        baseColor =
+                loadTexture(engine, resources, R.drawable.dirty_gold_01_color, TextureType.COLOR)
         normal = loadTexture(engine, resources, R.drawable.dirty_gold_01_normal, TextureType.NORMAL)
         ao = loadTexture(engine, resources, R.drawable.dirty_gold_01_ao, TextureType.DATA)
-        roughness = loadTexture(engine, resources, R.drawable.dirty_gold_01_roughness, TextureType.DATA)
-        metallic = loadTexture(engine, resources, R.drawable.dirty_gold_01_metallic, TextureType.DATA)
+        roughness =
+                loadTexture(engine, resources, R.drawable.dirty_gold_01_roughness, TextureType.DATA)
+        metallic =
+                loadTexture(engine, resources, R.drawable.dirty_gold_01_metallic, TextureType.DATA)
 
         // A texture sampler does not need to be kept around or destroyed
         val sampler = TextureSampler()
@@ -241,8 +244,7 @@ class MainActivity : Activity() {
         animator.start()
     }
 
-    private fun loadImageBasedLight() {
-    }
+    private fun loadImageBasedLight() {}
 
     override fun onResume() {
         super.onResume()
@@ -320,8 +322,8 @@ class MainActivity : Activity() {
         override fun onDetachedFromSurface() {
 
             displayHelper.detach()
-                // Required to ensure we don't return before Filament is done executing the
-                // destroySwapChain command, otherwise Android might destroy the Surface too early
+            // Required to ensure we don't return before Filament is done executing the
+            // destroySwapChain command, otherwise Android might destroy the Surface too early
             swapChain?.let {
                 engine.destroySwapChain(it)
                 engine.flushAndWait()
