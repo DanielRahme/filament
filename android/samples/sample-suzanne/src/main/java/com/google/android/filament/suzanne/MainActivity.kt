@@ -63,21 +63,23 @@ class MainActivity : Activity() {
     private lateinit var displayHelper: DisplayHelper
     private lateinit var choreographer: Choreographer
 
-    private lateinit var engine:        Engine
-    private lateinit var scene:         Scene
-    private lateinit var renderer:      Renderer
-    private lateinit var view:          View
-    private lateinit var camera:        Camera
-    private lateinit var material:      Material
+    private lateinit var engine: Engine
+    private lateinit var scene: Scene
+    private lateinit var renderer: Renderer
+    private lateinit var renderTarget: RenderTarget
+    private lateinit var view: View
+    private lateinit var camera: Camera
+    private lateinit var material: Material
     private lateinit var materialInstance: MaterialInstance
-    private lateinit var baseColor:     Texture
-    private lateinit var normal:        Texture
-    private lateinit var ao:            Texture
-    private lateinit var roughness:     Texture
-    private lateinit var metallic:      Texture
-    private lateinit var mesh:          Mesh
-    private lateinit var ibl:           Ibl
-    @Entity private var light =         0
+    private lateinit var baseColor: Texture
+    private lateinit var normal: Texture
+    private lateinit var ao: Texture
+    private lateinit var roughness: Texture
+    private lateinit var metallic: Texture
+    private lateinit var offscreenColorTexture: Texture
+    private lateinit var mesh: Mesh
+    private lateinit var ibl: Ibl
+    @Entity private var light = 0
     private var swapChain: SwapChain? = null
     private val frameScheduler = FrameCallback()
     private val animator = ValueAnimator.ofFloat(0.0f, (2.0 * PI).toFloat())
@@ -119,6 +121,9 @@ class MainActivity : Activity() {
         val options = View.DynamicResolutionOptions()
         options.enabled = true
         view.dynamicResolutionOptions = options
+
+        val vp = view.getViewport()
+        view.viewport = Viewport(0, 0, vp.width, vp.height)
 
         // Setup Scene
         // Load Material
@@ -164,16 +169,44 @@ class MainActivity : Activity() {
         // Move the mesh down
         // Filament uses column-major matrices
         /* ktlint-disable */
-        engine.transformManager.setTransform(engine.transformManager.getInstance(mesh.renderable),
+        engine.transformManager.setTransform(
+                engine.transformManager.getInstance(mesh.renderable),
                 floatArrayOf(
-                        1.0f, 0.0f, 0.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f, 0.0f,
-                        0.0f, 0.0f, 1.0f, 0.0f,
-                        0.0f, -1.2f, 0.0f, 1.0f
+                        1.0f,
+                        0.0f,
+                        0.0f,
+                        0.0f,
+                        0.0f,
+                        1.0f,
+                        0.0f,
+                        0.0f,
+                        0.0f,
+                        0.0f,
+                        1.0f,
+                        0.0f,
+                        0.0f,
+                        -1.2f,
+                        0.0f,
+                        1.0f
                 )
         )
         /* ktlint-enable */
 
+        offscreenColorTexture =
+                Texture.Builder()
+                        .width(vp.width)
+                        .height(vp.height)
+                        .levels(1)
+                        .usage(Texture.Usage.COLOR_ATTACHMENT + Texture.Usage.SAMPLEABLE)
+                        .format(Texture.InternalFormat.RGBA8)
+                        .build(engine)
+
+        renderTarget =
+                RenderTarget.Builder()
+                        .texture(RenderTarget.AttachmentPoint.COLOR, offscreenColorTexture)
+                        .build(engine)
+
+        view.setRenderTarget(renderTarget)
         // Add the entity to the scene to render it
         scene.addEntity(mesh.renderable)
 
@@ -242,6 +275,7 @@ class MainActivity : Activity() {
         engine.destroyTexture(metallic)
         engine.destroyEntity(light)
         engine.destroyRenderer(renderer)
+        engine.destroyRenderTarget(renderTarget)
         engine.destroyMaterialInstance(materialInstance)
         engine.destroyMaterial(material)
         engine.destroyView(view)
