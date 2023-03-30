@@ -15,22 +15,12 @@ and WebGL. It is designed to be as small as possible and as efficient as possibl
 
 ## Build options
 
-Build android release with Suzanne sample:
-
-    CC=/usr/bin/clang CXX=/usr/bin/clang++ CXXFLAGS=-stdlib=libc++ ./build.sh -k sample-suzanne -q arm64-v8a -p android -i release
-
 Build android samples:
 
-    - sample-suzanne
-    - sample-pbr-sphere
-    - sample-textured-object
+- sample-suzanne
+- sample-lucy
 
-    CC=/usr/bin/clang CXX=/usr/bin/clang++ CXXFLAGS=-stdlib=libc++ ./build.sh -k sample-textured-object,sample-suzanne,sample-pbr-sphere -q arm64-v8a -p android -i release
-
-
-Build original samples for desktop and android platforms
-
-    CC=/usr/bin/clang CXX=/usr/bin/clang++ CXXFLAGS=-stdlib=libc++ ./build.sh -k sample-textured-object,sample-material-builder -q arm64-v8a,x86_64 -p desktop,android -i release
+    CC=/usr/bin/clang CXX=/usr/bin/clang++ CXXFLAGS=-stdlib=libc++ ./build.sh -k sample-suzanne,sample-lucy -q arm64-v8a -p android -i release
 
 
 Build release for android and desktop
@@ -44,9 +34,11 @@ Sign:
     export APKSIGNER=$ANDROID_HOME/build-tools/33.0.1/apksigner
 
     apksigner sign --ks <keystore>.jks <app-name>.apk
-    ${APKSIGNER} sign --ks my-release-key.keystore out/sample-textured-object-release.apk
+    ${APKSIGNER} sign --ks my-release-key.keystore out/sample-suzanne-release.apk
+    ${APKSIGNER} sign --ks my-release-key.keystore out/sample-lucy-release.apk
 
-    adb install -g out/sample-textured-object-release.apk
+    adb install -g out/sample-suzanne-release.apk
+    adb install -g out/sample-lucy-release.apk
 
 
 Clean:
