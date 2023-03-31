@@ -155,20 +155,6 @@ class MainActivity : Activity() {
         // Load the mesh in the filamesh format (see filamesh tool)
         mesh = loadMesh(assets, "models/monkey.filamesh", materials, engine)
 
-        // Move the mesh down
-        // Filament uses column-major matrices
-        /* ktlint-disable */
-        engine.transformManager.setTransform(
-                engine.transformManager.getInstance(mesh.renderable),
-                floatArrayOf(
-                        1.0f, 0.0f, 0.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f, 0.0f,
-                        0.0f, 0.0f, 1.0f, 0.0f,
-                        0.0f, -1.2f, 0.0f, 1.0f
-                )
-        )
-        /* ktlint-enable */
-
         // Add the entity to the scene to render it
         scene.addEntity(mesh.renderable)
 
@@ -210,16 +196,11 @@ class MainActivity : Activity() {
 
         // Note that the textures are stored in drawable-nodpi to prevent the system
         // from automatically resizing them based on the display's density
-        baseColor =
-                loadTexture(engine, resources, R.drawable.dirty_gold_01_color, TextureType.COLOR)
-        normal = loadTexture(engine, resources, R.drawable.dirty_gold_01_normal, TextureType.NORMAL)
-        // aoRoughnessMetallic = loadTexture( engine, resources,
-        // R.drawable.floor_ao_roughness_metallic, TextureType.DATA)
-        ao = loadTexture(engine, resources, R.drawable.dirty_gold_01_ao, TextureType.DATA)
-        roughness =
-                loadTexture(engine, resources, R.drawable.dirty_gold_01_roughness, TextureType.DATA)
-        metallic =
-                loadTexture(engine, resources, R.drawable.dirty_gold_01_metallic, TextureType.DATA)
+        baseColor = loadTexture(engine, resources, R.drawable.oakfloor_color, TextureType.COLOR)
+        normal = loadTexture(engine, resources, R.drawable.oakfloor_normal, TextureType.NORMAL)
+        ao = loadTexture(engine, resources, R.drawable.oakfloor_ao, TextureType.DATA)
+        roughness = loadTexture(engine, resources, R.drawable.oakfloor_roughness, TextureType.DATA)
+        metallic = loadTexture(engine, resources, R.drawable.oakfloor_metallic, TextureType.DATA)
 
         // A texture sampler does not need to be kept around or destroyed
         val sampler = TextureSampler()
@@ -227,14 +208,13 @@ class MainActivity : Activity() {
 
         materialInstance.setParameter("baseColor", baseColor, sampler)
         materialInstance.setParameter("normal", normal, sampler)
-        // materialInstance.setParameter("aoRoughnessMetallic", aoRoughnessMetallic, sampler)
         materialInstance.setParameter("ao", ao, sampler)
         materialInstance.setParameter("roughness", roughness, sampler)
         materialInstance.setParameter("metallic", metallic, sampler)
     }
 
     private fun loadImageBasedLight() {
-        ibl = loadIbl(assets, "envs/flower_road_no_sun_2k", engine)
+        ibl = loadIbl(assets, "envs/graffiti_shelter_2k", engine)
         ibl.indirectLight.intensity = 40_000.0f
     }
 

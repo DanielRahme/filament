@@ -14,7 +14,7 @@ filamentTools {
     meshInputFile = project.layout.projectDirectory.file("../../../assets/models/monkey/monkey.obj")
     meshOutputDir = project.layout.projectDirectory.dir("src/main/assets/models")
 
-    iblInputFile = project.layout.projectDirectory.file("../../../third_party/environments/flower_road_no_sun_2k.hdr")
+    iblInputFile = project.layout.projectDirectory.file("../../../third_party/environments/graffiti_shelter_2k.hdr")
     iblOutputDir = project.layout.projectDirectory.dir("src/main/assets/envs")
 }
 
@@ -35,8 +35,7 @@ android {
 
     buildTypes {
         release {
-            debuggable false
-
+            debuggable true
         }
         debug {
             debuggable true

@@ -46,39 +46,39 @@
 //#define BRDF_CLOTH_V                SPECULAR_V_NEUBELT
 
 //----- Unreal Engine BRDFs  -----
+//#define BRDF_SPECULAR_V             SPECULAR_V_SCHLICK_UE4
+//#define BRDF_SPECULAR_F             SPECULAR_F_SCHLICK_UE4
+//#define BRDF_SPECULAR_D             SPECULAR_D_GGX_UE4
+//
+//#define BRDF_CLEAR_COAT_D           SPECULAR_D_GGX
+//#define BRDF_DIFFUSE                DIFFUSE_LAMBERT
+//#define BRDF_CLEAR_COAT_V           SPECULAR_V_KELEMEN
+//#define BRDF_ANISOTROPIC_D          SPECULAR_D_GGX_ANISOTROPIC
+//#define BRDF_ANISOTROPIC_V          SPECULAR_V_GGX_ANISOTROPIC
+//#define BRDF_CLOTH_D                SPECULAR_D_CHARLIE
+//#define BRDF_CLOTH_V                SPECULAR_V_NEUBELT
+
+// Original
 #define BRDF_DIFFUSE                DIFFUSE_LAMBERT
-#define BRDF_SPECULAR_D             SPECULAR_D_GGX_UE4
-#define BRDF_SPECULAR_V             SPECULAR_V_SCHLICK_UE4
-#define BRDF_SPECULAR_F             SPECULAR_F_SCHLICK_UE4
+
+#if FILAMENT_QUALITY < FILAMENT_QUALITY_HIGH
+#define BRDF_SPECULAR_D             SPECULAR_D_GGX
+#define BRDF_SPECULAR_V             SPECULAR_V_SMITH_GGX_FAST
+#define BRDF_SPECULAR_F             SPECULAR_F_SCHLICK
+#else
+#define BRDF_SPECULAR_D             SPECULAR_D_GGX
+#define BRDF_SPECULAR_V             SPECULAR_V_SMITH_GGX
+#define BRDF_SPECULAR_F             SPECULAR_F_SCHLICK
+#endif
 
 #define BRDF_CLEAR_COAT_D           SPECULAR_D_GGX
 #define BRDF_CLEAR_COAT_V           SPECULAR_V_KELEMEN
+
 #define BRDF_ANISOTROPIC_D          SPECULAR_D_GGX_ANISOTROPIC
 #define BRDF_ANISOTROPIC_V          SPECULAR_V_GGX_ANISOTROPIC
+
 #define BRDF_CLOTH_D                SPECULAR_D_CHARLIE
 #define BRDF_CLOTH_V                SPECULAR_V_NEUBELT
-
-// Original
-//#define BRDF_DIFFUSE                DIFFUSE_LAMBERT
-//
-//#if FILAMENT_QUALITY < FILAMENT_QUALITY_HIGH
-//#define BRDF_SPECULAR_D             SPECULAR_D_GGX
-//#define BRDF_SPECULAR_V             SPECULAR_V_SMITH_GGX_FAST
-//#define BRDF_SPECULAR_F             SPECULAR_F_SCHLICK
-//#else
-//#define BRDF_SPECULAR_D             SPECULAR_D_GGX
-//#define BRDF_SPECULAR_V             SPECULAR_V_SMITH_GGX
-//#define BRDF_SPECULAR_F             SPECULAR_F_SCHLICK
-//#endif
-//
-//#define BRDF_CLEAR_COAT_D           SPECULAR_D_GGX
-//#define BRDF_CLEAR_COAT_V           SPECULAR_V_KELEMEN
-//
-//#define BRDF_ANISOTROPIC_D          SPECULAR_D_GGX_ANISOTROPIC
-//#define BRDF_ANISOTROPIC_V          SPECULAR_V_GGX_ANISOTROPIC
-//
-//#define BRDF_CLOTH_D                SPECULAR_D_CHARLIE
-//#define BRDF_CLOTH_V                SPECULAR_V_NEUBELT
 
 //------------------------------------------------------------------------------
 // Specular BRDF implementations
