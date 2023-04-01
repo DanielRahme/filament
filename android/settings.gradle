@@ -20,6 +20,8 @@ include ':samples:sample-textured-object'
 include ':samples:sample-transparent-view'
 include ':samples:sample-pbr-sphere'
 include ':samples:sample-suzanne'
+include ':samples:sample-suzanne-vk'
 include ':samples:sample-lucy'
+include ':samples:sample-lucy-vk'
 
 rootProject.name = 'filament'

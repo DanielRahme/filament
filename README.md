@@ -36,6 +36,7 @@ Sign:
     apksigner sign --ks <keystore>.jks <app-name>.apk
     ${APKSIGNER} sign --ks my-release-key.keystore out/sample-suzanne-release.apk
     ${APKSIGNER} sign --ks my-release-key.keystore out/sample-lucy-release.apk
+    ${APKSIGNER} sign --ks my-release-key.keystore out/sample-lucy-release.apk out/sample-lucy-vk-release.apk out/sample-suzanne-release out/sample-suzanne-vk-release
 
     adb install -g out/sample-suzanne-release.apk
     adb install -g out/sample-lucy-release.apk

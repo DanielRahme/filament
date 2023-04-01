@@ -1,0 +1,50 @@
+// suzanne_vk material
+
+material {
+    name : suzanne_vk_pbr,
+    shadingModel : lit,
+    parameters : [
+        // Base color sRGB texture
+        {
+            type : sampler2d,
+            name : baseColor
+        },
+        {
+            type : sampler2d,
+            name : ao
+        },
+        {
+            type : sampler2d,
+            name : roughness
+        },
+        {
+            type : sampler2d,
+            name : metallic
+        },
+        // Normal map RGB texture
+        {
+            type : sampler2d,
+            name : normal
+        }
+    ],
+    // To sample textures our material must declare that it requires
+    // a set of UV coordinates from the rendered mesh
+    requires: [
+        uv0
+    ]
+}
+
+fragment {
+    void material(inout MaterialInputs material) {
+        // The normal map must be set *before* calling prepareMaterial()
+        material.normal = texture(materialParams_normal, getUV0()).xyz * 2.0 - 1.0;
+
+        prepareMaterial(material);
+
+        material.baseColor = texture(materialParams_baseColor, getUV0());
+
+        material.ambientOcclusion = texture(materialParams_ao, getUV0()).r;
+        material.roughness = texture(materialParams_roughness, getUV0()).r;
+        material.metallic = texture(materialParams_metallic, getUV0()).r;
+    }
+}
