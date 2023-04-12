@@ -336,9 +336,7 @@ class MainActivity : Activity() {
 
             // This check guarantees that we have a swap chain
             if (uiHelper.isReadyToRender) {
-                // If beginFrame() returns false you should skip the frame
-                // This means you are sending frames too quickly to the GPU
-                if (renderer.beginFrame(swapChain!!, frameTimeNanos)) {
+                for (i in 1..100) {
                     renderer.render(view)
                     renderer.endFrame()
                 }
