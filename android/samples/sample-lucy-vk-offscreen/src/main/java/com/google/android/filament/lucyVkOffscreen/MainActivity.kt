@@ -223,6 +223,9 @@ class MainActivity : Activity() {
                         .build(engine)
 
         view.setRenderTarget(renderTarget)
+        val displayinfo = renderer.getDisplayInfo()
+        displayinfo.refreshRate = 0.0f
+        renderer.setDisplayInfo(displayinfo)
 
         startAnimation()
     }

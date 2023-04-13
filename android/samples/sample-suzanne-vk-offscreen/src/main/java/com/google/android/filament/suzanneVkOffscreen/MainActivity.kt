@@ -199,6 +199,9 @@ class MainActivity : Activity() {
                         .build(engine)
 
         view.setRenderTarget(renderTarget)
+        val displayinfo = renderer.getDisplayInfo()
+        displayinfo.refreshRate = 0.0f
+        renderer.setDisplayInfo(displayinfo)
 
         startAnimation()
     }
@@ -307,6 +310,9 @@ class MainActivity : Activity() {
         override fun doFrame(frameTimeNanos: Long) {
             // Schedule the next frame
             choreographer.postFrameCallback(this)
+            val displayinfo = renderer.getDisplayInfo()
+            displayinfo.refreshRate = 0.0f
+            renderer.setDisplayInfo(displayinfo)
 
             // This check guarantees that we have a swap chain
             if (uiHelper.isReadyToRender) {
