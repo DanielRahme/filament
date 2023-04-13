@@ -345,10 +345,14 @@ class MainActivity : Activity() {
             Log.w("PBR_DEBUG", displayinfo.refreshRate.toString())
             // This check guarantees that we have a swap chain
             if (uiHelper.isReadyToRender) {
-                for (i in 1..100) {
+                // If beginFrame() returns false you should skip the frame
+                // This means you are sending frames too quickly to the GPU
+                //if (renderer.beginFrame(swapChain!!, frameTimeNanos)) {
+                renderer.beginFrame(swapChain!!, frameTimeNanos)
+                for (i in 0..9) {
                     renderer.render(view)
-                    renderer.endFrame()
                 }
+                renderer.endFrame()
             }
         }
     }

@@ -290,10 +290,12 @@ class MainActivity : Activity() {
             if (uiHelper.isReadyToRender) {
                 // If beginFrame() returns false you should skip the frame
                 // This means you are sending frames too quickly to the GPU
-                if (renderer.beginFrame(swapChain!!, frameTimeNanos)) {
-                    renderer.render(view)
+                //if (renderer.beginFrame(swapChain!!, frameTimeNanos)) {
+                    renderer.beginFrame(swapChain!!, frameTimeNanos)
+                    for (i in 0..99) {
+                        renderer.render(view)
+                    }
                     renderer.endFrame()
-                }
             }
         }
     }
