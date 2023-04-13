@@ -16,6 +16,7 @@
 
 package com.google.android.filament.lucy_vk_offscreen
 
+import android.util.Log
 import android.animation.ValueAnimator
 import android.app.Activity
 import android.os.Bundle
@@ -336,6 +337,12 @@ class MainActivity : Activity() {
         override fun doFrame(frameTimeNanos: Long) {
             // Schedule the next frame
             choreographer.postFrameCallback(this)
+
+            val displayinfo = renderer.getDisplayInfo()
+            displayinfo.refreshRate = 0.0f
+            renderer.setDisplayInfo(displayinfo)
+            Log.d("PBR_DEBUG", "HEJHEJ")
+            Log.w("PBR_DEBUG", "HEJHEJ warning")
 
             // This check guarantees that we have a swap chain
             if (uiHelper.isReadyToRender) {
