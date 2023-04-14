@@ -16,7 +16,6 @@
 
 package com.google.android.filament.suzanne_vk_offscreen
 
-import android.util.Log
 import android.animation.ValueAnimator
 import android.app.Activity
 import android.os.Bundle
@@ -311,19 +310,12 @@ class MainActivity : Activity() {
         override fun doFrame(frameTimeNanos: Long) {
             // Schedule the next frame
             choreographer.postFrameCallback(this)
-            val displayinfo = renderer.getDisplayInfo()
-            displayinfo.refreshRate = 0.0f
-            renderer.setDisplayInfo(displayinfo)
 
-            Log.d("PBR_DEBUG", "HEJHEJ")
-            Log.w("PBR_DEBUG", "HEJHEJ warning")
             // This check guarantees that we have a swap chain
             if (uiHelper.isReadyToRender) {
-                // If beginFrame() returns false you should skip the frame
-                // This means you are sending frames too quickly to the GPU
-                //if (renderer.beginFrame(swapChain!!, frameTimeNanos)) {
+
                 renderer.beginFrame(swapChain!!, frameTimeNanos)
-                for (i in 0..9) {
+                for (i in 0..99) {
                     renderer.render(view)
                 }
                 renderer.endFrame()
