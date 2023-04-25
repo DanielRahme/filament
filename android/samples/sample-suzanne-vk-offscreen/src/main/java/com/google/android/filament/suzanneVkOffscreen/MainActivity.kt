@@ -140,6 +140,9 @@ class MainActivity : Activity() {
         options.enabled = true
 
         view.dynamicResolutionOptions = options
+
+        view.viewport.width = 1920
+        view.viewport.height = 1080
     }
 
     private fun setupScene() {
@@ -346,7 +349,8 @@ class MainActivity : Activity() {
             val aspect = width.toDouble() / height.toDouble()
             camera.setProjection(45.0, aspect, 0.1, 20.0, Camera.Fov.VERTICAL)
 
-            view.viewport = Viewport(0, 0, width, height)
+            // view.viewport = Viewport(0, 0, width, height)
+            view.viewport = Viewport(0, 0, 1920, 1080)
         }
     }
 
