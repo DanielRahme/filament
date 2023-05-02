@@ -115,7 +115,7 @@ class MainActivity : Activity() {
         uiHelper.renderCallback = SurfaceCallback()
 
         // NOTE: To choose a specific rendering resolution, add the following line:
-        // uiHelper.setDesiredSize(1280, 720)
+        uiHelper.setDesiredSize(offscreen_width, offscreen_height)
 
         uiHelper.attachTo(surfaceView)
     }
@@ -140,12 +140,11 @@ class MainActivity : Activity() {
 
         // Enable dynamic resolution with a default target frame rate of 60fps
         val options = View.DynamicResolutionOptions()
-        options.enabled = true
+        options.enabled = false
 
         view.dynamicResolutionOptions = options
 
-        view.viewport.width = offscreen_width
-        view.viewport.height = offscreen_height
+        view.viewport = Viewport(0, 0, offscreen_width, offscreen_height)
     }
 
     private fun setupScene() {
@@ -213,11 +212,10 @@ class MainActivity : Activity() {
         // guarantees a proper exposure
         camera.setExposure(16.0f, 1.0f / 125.0f, 100.0f)
 
-        val vp = view.getViewport()
         offscreenColorTexture =
                 Texture.Builder()
-                        .width(vp.width)
-                        .height(vp.height)
+                        .width(offscreen_width)
+                        .height(offscreen_height)
                         .levels(1)
                         .usage(Texture.Usage.COLOR_ATTACHMENT + Texture.Usage.SAMPLEABLE)
                         .format(Texture.InternalFormat.RGBA8)
