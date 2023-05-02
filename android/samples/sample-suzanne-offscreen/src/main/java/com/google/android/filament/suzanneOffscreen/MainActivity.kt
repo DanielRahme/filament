@@ -33,6 +33,9 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
+const val offscreen_width = 1920
+const val offscreen_height = 1080
+
 class MainActivity : Activity() {
     // Make sure to initialize the correct Filament JNI layer.
     companion object {
@@ -141,8 +144,8 @@ class MainActivity : Activity() {
 
         view.dynamicResolutionOptions = options
 
-        view.viewport.width = 1920
-        view.viewport.height = 1080
+        view.viewport.width = offscreen_width
+        view.viewport.height = offscreen_height
     }
 
     private fun setupScene() {
@@ -350,7 +353,7 @@ class MainActivity : Activity() {
             camera.setProjection(45.0, aspect, 0.1, 20.0, Camera.Fov.VERTICAL)
 
             // view.viewport = Viewport(0, 0, width, height)
-            view.viewport = Viewport(0, 0, 1920, 1080)
+            view.viewport = Viewport(0, 0, offscreen_width, offscreen_height)
         }
     }
 
